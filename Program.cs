@@ -1,5 +1,7 @@
+using Hangfire;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using MvcApp1.backgroundService;
 using TestProject.Data;
 using TestProject.Models;
 
@@ -20,7 +22,14 @@ builder.Services.AddDbContext<testContext>(opt =>
     opt.UseSqlServer(conStr, options => options.EnableRetryOnFailure());
 }
 );
+builder.Services.AddScoped<IHangFireService, HangFireService>();
 
+builder.Services.AddHangfire(x =>
+{
+    x.UseSqlServerStorage(builder.Configuration.GetConnectionString("testString"));
+});
+
+builder.Services.AddHangfireServer();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -29,6 +38,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseHangfireDashboard();
 
 app.UseHttpsRedirection();
 
